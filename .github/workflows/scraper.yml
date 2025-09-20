@@ -1,0 +1,48 @@
+name: Face-image-scraper
+
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write 
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: true
+          swap-storage: true
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonpath_ng httpx aiofiles
+
+      - name: Run scraper
+        env:
+            IMAGE_SCRAPER: ${{ secrets.IMAGE_SCRAPER }}
+        run: python scraper.py
+      - name: Check size of a folder
+        run: du -sh images
+      - name: config
+        run: |
+          git config --global user.name 'youssefhk-sw'
+          git config --global user.email 'youssefh181k@gmail.com'
+      - name: Upload images as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped_images_and_maps
+          path: | 
+            images/
+            maps/
